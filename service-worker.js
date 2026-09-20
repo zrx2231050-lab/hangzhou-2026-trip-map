@@ -1,4 +1,4 @@
-const CACHE = 'hangzhou-trip-v2';
+const CACHE = 'hangzhou-trip-v3';
 const APP_SHELL = [
   './',
   './index.html',
