@@ -130,12 +130,24 @@ a:hover { text-decoration: underline; }
 .tl-dot.drink   { background: var(--tint-purple); }
 .tl-dot.transport { background: var(--text-tertiary); }
 
+/* Route segment between two place cards */
+.leg {
+  position: relative; margin: 0 0 10px; padding: 7px 10px;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text-secondary); font-size: 12px; line-height: 1.35;
+}
+.leg::before { content: '↓'; color: var(--accent); font-size: 16px; font-weight: 700; }
+.leg strong { color: var(--text-primary); font-weight: 600; }
+.leg .leg-from { color: var(--text-tertiary); }
+
 /* ── Card ── */
-.card { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 14px 16px; box-shadow: var(--shadow-sm); transition: box-shadow .25s ease; cursor: pointer; }
-.card:active { box-shadow: var(--shadow-md); }
+.card { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 14px 16px; box-shadow: var(--shadow-sm); transition: box-shadow .25s ease, transform .2s ease; cursor: pointer; }
+.card:active { box-shadow: var(--shadow-md); transform: scale(.995); }
+.card:focus-visible { outline: 3px solid rgba(15,107,85,.28); outline-offset: 2px; }
 .card .time { font-size: 12px; font-weight: 600; color: var(--text-tertiary); letter-spacing: .01em; }
 .card .name { font-size: 17px; font-weight: 600; margin: 2px 0 4px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; }
 .card .desc { font-size: 14px; color: var(--text-secondary); line-height: 1.45; }
+.guide-hint { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 9px; border-top: .5px solid var(--separator); color: var(--accent); font-size: 13px; font-weight: 600; }
 
 /* Badge */
 .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 4px; }
@@ -166,6 +178,7 @@ a:hover { text-decoration: underline; }
 .btn.xhs    { background: #ff2442; color: #fff; }
 .btn.dp     { background: #ffa700; color: #fff; }
 .btn.rsv    { background: var(--tint-green); color: #fff; }
+.popup-guide { margin-top: 7px; padding: 6px 9px; border: none; border-radius: 7px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
 
 /* Action Sheet */
 .as-overlay {
@@ -195,13 +208,45 @@ a:hover { text-decoration: underline; }
 .as-group .as-item:active { background: rgba(0,0,0,.06); }
 .as-cancel { font-weight: 600; }
 
-/* Details — default open */
-.details {
-  margin-top: 10px; padding-top: 10px;
-  border-top: .5px solid var(--separator);
-  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+/* Place guide dialog */
+.guide-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
+  opacity: 0; pointer-events: none; transition: opacity .25s ease;
 }
-.details.closed { display: none; }
+.guide-overlay.show { opacity: 1; pointer-events: auto; }
+.guide-sheet {
+  width: 100%; max-width: 560px; max-height: min(82vh, 760px);
+  display: flex; flex-direction: column;
+  background: var(--bg-elevated); border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-lg); transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.22,1,.36,1); overflow: hidden;
+}
+.guide-overlay.show .guide-sheet { transform: translateY(0); }
+.guide-handle { width: 38px; height: 5px; margin: 8px auto 2px; border-radius: 99px; background: var(--separator); flex: 0 0 auto; }
+.guide-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 12px 18px 13px; border-bottom: .5px solid var(--separator); }
+.guide-kicker { color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.guide-head h3 { font-size: 21px; line-height: 1.25; letter-spacing: -.02em; }
+.guide-close { width: 36px; height: 36px; flex: 0 0 36px; border: none; border-radius: 50%; background: var(--bg-grouped); color: var(--text-secondary); font-size: 22px; cursor: pointer; }
+.guide-body { overflow-y: auto; padding: 4px 18px calc(22px + var(--safe-bottom)); overscroll-behavior: contain; }
+.guide-summary { padding: 13px 0; color: var(--text-secondary); font-size: 14px; line-height: 1.55; }
+.guide-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.guide-meta span { padding: 5px 9px; border-radius: 999px; background: var(--bg-grouped); color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.guide-section { padding: 12px 0; border-top: .5px solid var(--separator); }
+.guide-section h4 { font-size: 14px; margin-bottom: 6px; }
+.guide-section ul { padding-left: 19px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.guide-section li + li { margin-top: 4px; }
+.guide-note { margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(255,149,0,.1); color: #9a5b00; font-size: 12px; line-height: 1.5; }
+body.guide-open { overflow: hidden; }
+
+@media (min-width: 760px) {
+  .guide-overlay { align-items: stretch; justify-content: flex-end; }
+  .guide-sheet { height: 100%; max-height: none; border-radius: 20px 0 0 20px; transform: translateX(100%); }
+  .guide-overlay.show .guide-sheet { transform: translateX(0); }
+  .guide-handle { display: none; }
+  .guide-head { padding-top: 24px; }
+}
 
 /* ── Overview day list ── */
 .day-list .card { margin-bottom: 8px; }
@@ -247,61 +292,249 @@ const DAYS = [
     id: 1, label: '10/2 抵达', date: '10 月 2 日 · 周五', title: '萧山机场 T4 → 酒店 → 城市阳台可选', color: '#e97824',
     route: '萧山机场 T4 → 西湖湖滨美居（约 26 km）→ 钱江新城城市阳台（有体力再去）',
     locations: [
-      { name:'杭州萧山国际机场 T4', lat:30.2368729, lng:120.4291244, type:'transport', time:'16:35', desc:'航班抵达；取行李后预计 17:15–17:30 离开航站楼。', detail:'机场到酒店优先地铁 19 号线转 1 号线，或直接打车。国庆晚高峰按 45–70 分钟预留。', gmap:'杭州萧山国际机场T4' },
-      { name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'18:30', desc:'预计 18:30–19:00 入住，中河北路 3 号。', detail:'四晚均住这里，不为 10 月 5 日单独换酒店。', gmap:'杭州西湖湖滨美居酒店' },
-      { name:'钱江新城城市阳台', lat:30.2441989, lng:120.2124962, type:'spot', time:'—', desc:'18:30–19:00 入住后仍有体力再去；看钱塘江、城市天际线和夜景。', detail:'建议 19:30 左右到、21:00 左右回酒店。2026 年 10 月灯光秀具体场次尚未公布，不要为了赶秀压缩休息；即使无灯光秀，江景和秋冬景观亮灯仍可看。', gmap:'杭州钱江新城城市阳台' },
-      { name:'湖滨步行街', lat:30.25555, lng:120.16164, type:'spot', time:'—', desc:'如果不想跨到钱江新城，就在酒店附近湖滨轻松散步。', gmap:'杭州湖滨步行街' }
+      { id:'airport-t4', name:'杭州萧山国际机场 T4', lat:30.2368729, lng:120.4291244, type:'transport', time:'16:35', desc:'航班抵达；取行李后预计 17:15–17:30 离开航站楼。', detail:'机场到酒店优先地铁 19 号线转 1 号线，或直接打车。国庆晚高峰按 45–70 分钟预留。', gmap:'杭州萧山国际机场T4' },
+      { id:'hotel', name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'18:30', leg:{distance:'约 26 km', duration:'45–70 分钟', mode:'地铁或打车'}, desc:'预计 18:30–19:00 入住，中河北路 3 号。', detail:'四晚均住这里，不为 10 月 5 日单独换酒店。', gmap:'杭州西湖湖滨美居酒店' },
+      { id:'city-balcony', name:'钱江新城城市阳台', lat:30.2441989, lng:120.2124962, type:'spot', time:'—', leg:{from:'从酒店出发', distance:'约 5–6 km', duration:'20–35 分钟', mode:'地铁或打车'}, desc:'18:30–19:00 入住后仍有体力再去；看钱塘江、城市天际线和夜景。', detail:'建议 19:30 左右到、21:00 左右回酒店。2026 年 10 月灯光秀具体场次尚未公布，不要为了赶秀压缩休息；即使无灯光秀，江景和秋冬景观亮灯仍可看。', gmap:'杭州钱江新城城市阳台' },
+      { id:'hubin-street', name:'湖滨步行街', lat:30.25555, lng:120.16164, type:'spot', time:'—', leg:{from:'从酒店出发', distance:'约 1–1.5 km', duration:'15–20 分钟', mode:'步行'}, desc:'如果不想跨到钱江新城，就在酒店附近湖滨轻松散步。', gmap:'杭州湖滨步行街' }
     ]
   },
   {
     id: 2, label: '10/3 西湖', date: '10 月 3 日 · 周六', title: '西湖重点整日 · 南线到北线', color: '#0f6b55',
     route: '酒店 → 城隍阁 → 柳浪闻莺 → 雷峰塔 → 太子湾 → 花港观鱼 → 苏堤 → 曲院风荷 → 孤山/白堤 → 断桥',
     locations: [
-      { name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'准时出发；到城隍阁约 3.5–4 km。', gmap:'杭州西湖湖滨美居酒店' },
-      { name:'城隍阁', lat:30.2388852, lng:120.159932, type:'spot', time:'10:20', desc:'吴山俯瞰西湖与老城，游览约 1 小时。', detail:'11:20 左右下山，沿柳浪闻莺方向前进。', gmap:'杭州城隍阁' },
-      { name:'柳浪闻莺', lat:30.2419031, lng:120.151076, type:'spot', time:'11:25', desc:'城隍阁下山到南山路，约 1.5–2 km；附近午饭。', gmap:'杭州柳浪闻莺' },
-      { name:'雷峰塔', lat:30.2338837, lng:120.1450125, type:'spot', time:'13:20', desc:'从南山路约 2–2.5 km，公交或观光车更省体力。', detail:'计划游览 1 小时。节假日如排队过长，可只看外观，把时间留给湖岸。', gmap:'杭州雷峰塔景区' },
-      { name:'太子湾公园', lat:30.228755, lng:120.1376946, type:'spot', time:'14:35', desc:'雷峰塔步行约 600–800 m，游览约 40 分钟。', gmap:'杭州太子湾公园' },
-      { name:'花港观鱼', lat:30.2322634, lng:120.1342768, type:'spot', time:'15:30', desc:'从太子湾步行约 500–800 m，游览约 40 分钟。', gmap:'杭州花港观鱼' },
-      { name:'苏堤', lat:30.24516, lng:120.13263, type:'spot', time:'16:10', desc:'花港到苏堤北段约 2.3 km；体力不足就坐观光车。', detail:'这段不要硬走，保留体力给傍晚的孤山、白堤和断桥。', gmap:'杭州苏堤' },
-      { name:'曲院风荷', lat:30.2521659, lng:120.1286767, type:'spot', time:'16:50', desc:'短暂停留约 30 分钟。', gmap:'杭州曲院风荷' },
-      { name:'孤山 · 平湖秋月', lat:30.2547024, lng:120.1414654, type:'spot', time:'17:20', desc:'曲院风荷经孤山到白堤约 1.7–2 km。', gmap:'杭州平湖秋月' },
-      { name:'断桥残雪', lat:30.261531, lng:120.147367, type:'spot', time:'18:15', desc:'白堤步行约 1 km；之后往湖滨晚饭或打车回酒店。', detail:'全天预计步行 9–12 km。若比计划晚 45 分钟，优先跳过曲院风荷停留。', gmap:'杭州断桥残雪' }
+      { id:'hotel', name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'准时出发；到城隍阁约 3.5–4 km。', gmap:'杭州西湖湖滨美居酒店' },
+      { id:'chenghuang-pavilion', name:'城隍阁', lat:30.2388852, lng:120.159932, type:'spot', time:'10:20', leg:{distance:'约 3.5–4 km', duration:'15–25 分钟', mode:'打车或公交'}, desc:'吴山俯瞰西湖与老城，游览约 1 小时。', detail:'11:20 左右下山，沿柳浪闻莺方向前进。', gmap:'杭州城隍阁' },
+      { id:'liulang-wenying', name:'柳浪闻莺', lat:30.2419031, lng:120.151076, type:'spot', time:'11:25', leg:{distance:'约 1.5–2 km', duration:'25–35 分钟', mode:'下坡步行'}, desc:'城隍阁下山到南山路，约 1.5–2 km；附近午饭。', gmap:'杭州柳浪闻莺' },
+      { id:'leifeng-pagoda', name:'雷峰塔', lat:30.2338837, lng:120.1450125, type:'spot', time:'13:20', leg:{distance:'约 2–2.5 km', duration:'15–30 分钟', mode:'公交或观光车'}, desc:'从南山路约 2–2.5 km，公交或观光车更省体力。', detail:'计划游览 1 小时。节假日如排队过长，可只看外观，把时间留给湖岸。', gmap:'杭州雷峰塔景区' },
+      { id:'taiziwan-park', name:'太子湾公园', lat:30.228755, lng:120.1376946, type:'spot', time:'14:35', leg:{distance:'约 0.6–0.8 km', duration:'10–15 分钟', mode:'步行'}, desc:'雷峰塔步行约 600–800 m，游览约 40 分钟。', gmap:'杭州太子湾公园' },
+      { id:'huagang-view-fish', name:'花港观鱼', lat:30.2322634, lng:120.1342768, type:'spot', time:'15:30', leg:{distance:'约 0.5–0.8 km', duration:'10–15 分钟', mode:'步行'}, desc:'从太子湾步行约 500–800 m，游览约 40 分钟。', gmap:'杭州花港观鱼' },
+      { id:'su-causeway', name:'苏堤', lat:30.24516, lng:120.13263, type:'spot', time:'16:10', leg:{distance:'约 2–2.3 km', duration:'30–40 分钟', mode:'步行或观光车'}, desc:'花港到苏堤北段约 2.3 km；体力不足就坐观光车。', detail:'这段不要硬走，保留体力给傍晚的孤山、白堤和断桥。', gmap:'杭州苏堤' },
+      { id:'quyuan-fenghe', name:'曲院风荷', lat:30.2521659, lng:120.1286767, type:'spot', time:'16:50', leg:{distance:'约 1 km', duration:'15–20 分钟', mode:'步行'}, desc:'短暂停留约 30 分钟。', gmap:'杭州曲院风荷' },
+      { id:'gushan-pinghu', name:'孤山 · 平湖秋月', lat:30.2547024, lng:120.1414654, type:'spot', time:'17:20', leg:{distance:'约 1.7–2 km', duration:'25–35 分钟', mode:'步行'}, desc:'曲院风荷经孤山到白堤约 1.7–2 km。', gmap:'杭州平湖秋月' },
+      { id:'broken-bridge', name:'断桥残雪', lat:30.261531, lng:120.147367, type:'spot', time:'18:15', leg:{distance:'约 1–1.3 km', duration:'15–25 分钟', mode:'沿白堤步行'}, desc:'白堤步行约 1 km；之后往湖滨晚饭或打车回酒店。', detail:'全天预计步行 9–12 km。若比计划晚 45 分钟，优先跳过曲院风荷停留。', gmap:'杭州断桥残雪' }
     ]
   },
   {
     id: 3, label: '10/4 灵隐九溪', date: '10 月 4 日 · 周日', title: '灵隐 · 九溪 · 钱塘江顺路收尾', color: '#7367c9',
     route: '酒店 → 飞来峰 → 灵隐寺 → 龙井村 → 九溪十八涧 → 九溪烟树 → 九溪口/钱塘江边',
     locations: [
-      { name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'出发去灵隐，约 9 km；国庆按 50–70 分钟预留。', gmap:'杭州西湖湖滨美居酒店' },
-      { name:'飞来峰', lat:30.2388764, lng:120.0964157, type:'spot', time:'10:50', desc:'先看石刻，再进入灵隐寺区域。', detail:'预约必须覆盖当日对应时段，现场不再受理登记。', reserve:'https://www.lingyinsi.org/detail_57_19455.html', gmap:'杭州飞来峰' },
-      { name:'灵隐寺', lat:30.2424012, lng:120.0976311, type:'spot', time:'11:40', desc:'游览至 13:10 左右，随后在灵隐附近午饭。', detail:'10 月 4 日名额：9 月 27 日 08:00 开放。微信/支付宝搜索“杭州灵隐飞来峰”小程序；至少提前 1 天，最多提前 7 天。满额可在入园前一日 20:00 前线上候补。', reserve:'https://www.lingyinsi.org/detail_57_19455.html', gmap:'杭州灵隐寺' },
-      { name:'龙井村', lat:30.2218656, lng:120.098065, type:'spot', time:'15:15', desc:'灵隐到龙井道路约 6–7 km；14:10 前必须离开灵隐。', detail:'只短暂停留 30–35 分钟，不安排长时间喝茶，保证 16:00 进入九溪。', gmap:'杭州龙井村' },
-      { name:'九溪十八涧', lat:30.2112, lng:120.1017, type:'spot', time:'16:00', desc:'从龙井村方向进入，顺坡向九溪烟树走，核心徒步约 4–5 km。', detail:'16:00–17:40 完成主要徒步。16:00 才从九溪公交站往龙井上坡会更累，不建议反向走。', gmap:'杭州九溪十八涧' },
-      { name:'九溪烟树', lat:30.2046172, lng:120.1085446, type:'spot', time:'17:40', desc:'停留约 30 分钟，18:10 继续往九溪口和珊瑚沙方向。', detail:'山谷傍晚降温快，建议带薄外套；天黑后不继续深入山谷。', gmap:'杭州九溪烟树' },
-      { name:'九溪口 · 钱塘江边', lat:30.1892391, lng:120.113872, type:'spot', time:'18:30', desc:'九溪公交总站/珊瑚沙一带江边，散步看江面至 19:10。', detail:'九溪珊瑚沙属于钱塘江城区观潮区域，但此行只按顺路江景安排，不保证出现壮观潮头。临近日期再查官方潮汐预报；只在开放步道和护栏内停留，绝不进入丁坝、江滩或挡浪墙外。19:10 后返回湖滨美居吃晚饭。全天预计步行约 8–10 km。', gmap:'杭州九溪公交总站' }
+      { id:'hotel', name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'出发去灵隐，约 9 km；国庆按 50–70 分钟预留。', gmap:'杭州西湖湖滨美居酒店' },
+      { id:'feilai-peak', name:'飞来峰', lat:30.2388764, lng:120.0964157, type:'spot', time:'10:50', leg:{distance:'约 9 km', duration:'50–70 分钟', mode:'公交接驳或打车'}, desc:'先看石刻，再进入灵隐寺区域。', detail:'预约必须覆盖当日对应时段，现场不再受理登记。', reserve:'https://www.lingyinsi.org/detail_57_19455.html', gmap:'杭州飞来峰' },
+      { id:'lingyin-temple', name:'灵隐寺', lat:30.2424012, lng:120.0976311, type:'spot', time:'11:40', leg:{distance:'约 0.5–0.8 km', duration:'10–15 分钟', mode:'景区内步行'}, desc:'游览至 13:10 左右，随后在灵隐附近午饭。', detail:'10 月 4 日名额：9 月 27 日 08:00 开放。微信/支付宝搜索“杭州灵隐飞来峰”小程序；至少提前 1 天，最多提前 7 天。满额可在入园前一日 20:00 前线上候补。', reserve:'https://www.lingyinsi.org/detail_57_19455.html', gmap:'杭州灵隐寺' },
+      { id:'longjing-village', name:'龙井村', lat:30.2218656, lng:120.098065, type:'spot', time:'15:15', leg:{distance:'约 6–7 km', duration:'25–45 分钟', mode:'打车或公交'}, desc:'灵隐到龙井道路约 6–7 km；14:10 前必须离开灵隐。', detail:'只短暂停留 30–35 分钟，不安排长时间喝茶，保证 16:00 进入九溪。', gmap:'杭州龙井村' },
+      { id:'jiuxi-streams', name:'九溪十八涧', lat:30.2112, lng:120.1017, type:'spot', time:'16:00', leg:{distance:'约 1.5–2 km', duration:'25–35 分钟', mode:'下坡步行'}, desc:'从龙井村方向进入，顺坡向九溪烟树走，核心徒步约 4–5 km。', detail:'16:00–17:40 完成主要徒步。16:00 才从九溪公交站往龙井上坡会更累，不建议反向走。', gmap:'杭州九溪十八涧' },
+      { id:'jiuxi-misty-trees', name:'九溪烟树', lat:30.2046172, lng:120.1085446, type:'spot', time:'17:40', leg:{distance:'约 2.5–3 km', duration:'55–75 分钟', mode:'溪谷步行'}, desc:'停留约 30 分钟，18:10 继续往九溪口和珊瑚沙方向。', detail:'山谷傍晚降温快，建议带薄外套；天黑后不继续深入山谷。', gmap:'杭州九溪烟树' },
+      { id:'jiuxi-riverfront', name:'九溪口 · 钱塘江边', lat:30.1892391, lng:120.113872, type:'spot', time:'18:30', leg:{distance:'约 2–2.5 km', duration:'30–40 分钟', mode:'步行'}, desc:'九溪公交总站/珊瑚沙一带江边，散步看江面至 19:10。', detail:'九溪珊瑚沙属于钱塘江城区观潮区域，但此行只按顺路江景安排，不保证出现壮观潮头。临近日期再查官方潮汐预报；只在开放步道和护栏内停留，绝不进入丁坝、江滩或挡浪墙外。19:10 后返回湖滨美居吃晚饭。全天预计步行约 8–10 km。', gmap:'杭州九溪公交总站' }
     ]
   },
   {
     id: 4, label: '10/5 西溪运河', date: '10 月 5 日 · 周一', title: '西溪湿地 · 浙大紫金港 · 大运河', color: '#1677b8',
     route: '酒店 → 西溪湿地周家村 → 浙江大学紫金港 → 桥西历史街区 → 拱宸桥/大运河',
     locations: [
-      { name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'出发到西溪周家村约 11–13 km。', gmap:'杭州西湖湖滨美居酒店' },
-      { name:'西溪湿地周家村入口', lat:30.2573265, lng:120.0564531, type:'spot', time:'10:40', desc:'游览约 2.5 小时，建议电瓶船 + 步行。', detail:'西溪很大，不做全徒步；13:20 左右离开，给浙大和运河留时间。', gmap:'西溪湿地周家村入口' },
-      { name:'浙江大学紫金港校区', lat:30.305078, lng:120.0753432, type:'spot', time:'14:00', desc:'从西溪约 5–7 km，校园游览约 1.5 小时。', detail:'国庆开放和社会公众进校规则可能临时调整，出发前关注“浙江大学”官方通知并提前完成进校预约。', gmap:'浙江大学紫金港校区' },
-      { name:'桥西历史文化街区', lat:30.3197269, lng:120.1330992, type:'spot', time:'16:10', desc:'浙大到桥西约 6–8 km；沿街区和运河慢慢走。', gmap:'杭州桥西历史文化街区' },
-      { name:'拱宸桥 · 京杭大运河', lat:30.3204639, lng:120.1339172, type:'spot', time:'17:15', desc:'桥西到拱宸桥步行游览，18:30 后在运河边晚饭。', detail:'20:00 左右返回酒店，约 6–8 km。坐船时全天步行约 6–8 km。', gmap:'杭州拱宸桥' }
+      { id:'hotel', name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'出发到西溪周家村约 11–13 km。', gmap:'杭州西湖湖滨美居酒店' },
+      { id:'xixi-zhoujiacun', name:'西溪湿地周家村入口', lat:30.2573265, lng:120.0564531, type:'spot', time:'10:40', leg:{distance:'约 11–13 km', duration:'35–55 分钟', mode:'地铁或打车'}, desc:'游览约 2.5 小时，建议电瓶船 + 步行。', detail:'西溪很大，不做全徒步；13:20 左右离开，给浙大和运河留时间。', gmap:'西溪湿地周家村入口' },
+      { id:'zju-zijingang', name:'浙江大学紫金港校区', lat:30.305078, lng:120.0753432, type:'spot', time:'14:00', leg:{distance:'约 5–7 km', duration:'20–35 分钟', mode:'打车或公交'}, desc:'从西溪约 5–7 km，校园游览约 1.5 小时。', detail:'国庆开放和社会公众进校规则可能临时调整，出发前关注“浙江大学”官方通知并提前完成进校预约。', gmap:'浙江大学紫金港校区' },
+      { id:'qiaoxi-historic', name:'桥西历史文化街区', lat:30.3197269, lng:120.1330992, type:'spot', time:'16:10', leg:{distance:'约 6–8 km', duration:'25–40 分钟', mode:'打车或公交'}, desc:'浙大到桥西约 6–8 km；沿街区和运河慢慢走。', gmap:'杭州桥西历史文化街区' },
+      { id:'gongchen-bridge', name:'拱宸桥 · 京杭大运河', lat:30.3204639, lng:120.1339172, type:'spot', time:'17:15', leg:{distance:'约 0.4–0.8 km', duration:'8–15 分钟', mode:'沿街区步行'}, desc:'桥西到拱宸桥步行游览，18:30 后在运河边晚饭。', detail:'20:00 左右返回酒店，约 6–8 km。坐船时全天步行约 6–8 km。', gmap:'杭州拱宸桥' }
     ]
   },
   {
     id: 5, label: '10/6 返程', date: '10 月 6 日 · 周二', title: '退房 · 前往萧山机场 T4', color: '#a84d5d',
     route: '酒店退房/寄存 → 早午饭 → 取行李 → 萧山机场 T4（约 26 km）',
     locations: [
-      { name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'退房并寄存行李，附近吃早午饭。', detail:'11:30 回酒店取行李，最迟 12:00 出发。', gmap:'杭州西湖湖滨美居酒店' },
-      { name:'杭州萧山国际机场 T4', lat:30.2368729, lng:120.4291244, type:'transport', time:'13:00', desc:'预计 13:00–13:30 抵达，航班 15:55 起飞。', detail:'10 月 6 日仍可能是返程高峰；如果实时导航显示道路拥堵，优先地铁 1 号线转 19 号线。', gmap:'杭州萧山国际机场T4' }
+      { id:'hotel', name:'杭州西湖湖滨美居酒店', lat:30.25939, lng:120.17133, type:'hotel', time:'10:00', desc:'退房并寄存行李，附近吃早午饭。', detail:'11:30 回酒店取行李，最迟 12:00 出发。', gmap:'杭州西湖湖滨美居酒店' },
+      { id:'airport-t4', name:'杭州萧山国际机场 T4', lat:30.2368729, lng:120.4291244, type:'transport', time:'13:00', leg:{distance:'约 26 km', duration:'50–80 分钟', mode:'地铁或打车'}, desc:'预计 13:00–13:30 抵达，航班 15:55 起飞。', detail:'10 月 6 日仍可能是返程高峰；如果实时导航显示道路拥堵，优先地铁 1 号线转 19 号线。', gmap:'杭州萧山国际机场T4' }
     ]
   }
 ];
+
+// One reusable guide per physical place. Route-specific details stay in DAYS.
+const GUIDES = {
+  'airport-t4': {
+    duration:'预留 2.5–3 小时', tags:['交通攻略','T4 航站楼'],
+    summary:'抵达日先把取行李和国庆拥堵算进去；返程日宁可早到，不把市区路况当成固定时间。',
+    sections:[
+      {title:'抵达怎么走', items:['取到行李后再判断打车或地铁；道路拥堵明显时优先地铁 19 号线转 1 号线。','同行人数多、行李多时再比较打车时间和价格。']},
+      {title:'返程提醒', items:['10 月 6 日最迟 12:00 从酒店出发，目标 13:00–13:30 到达 T4。','提前确认值机柜台、托运行李截止时间和航站楼，证件随身携带。']}
+    ], note:'航班、值机柜台和交通耗时均以出发当天航空公司与地图实时信息为准。'
+  },
+  'hotel': {
+    duration:'住宿基点 · 4 晚', tags:['入住攻略','行李寄存'],
+    summary:'全程不换酒店。每天从湖滨一带出发，返程可按体力选择步行、地铁或打车。',
+    sections:[
+      {title:'入住与出发', items:['抵达后先办理入住、确认早餐和寄存规则，再决定是否增加城市阳台夜游。','每天出发前检查充电、雨具、饮水和当天预约码。']},
+      {title:'最后一天', items:['10:00 退房并寄存行李，11:30 前回酒店取行李。','不要把贵重物品和证件放入寄存行李。']}
+    ]
+  },
+  'city-balcony': {
+    duration:'建议 60–90 分钟', tags:['夜景','备选行程'],
+    summary:'适合抵达后仍有体力时看钱塘江与城市天际线，不为等待灯光秀压缩休息。',
+    sections:[
+      {title:'推荐走法', items:['到达后先找江边开放步道，再沿城市阳台短距离往返。','把主要时间留给江景和天际线，约 21:00 前返程。']},
+      {title:'注意事项', items:['江边风大，带薄外套；只在开放步道和护栏内活动。','2026 年 10 月灯光秀安排尚未公布，临行前查杭州官方通知。']}
+    ], note:'若航班晚点或明显疲劳，直接取消，不影响后续核心行程。'
+  },
+  'hubin-street': {
+    duration:'建议 45–75 分钟', tags:['轻松散步','夜间备选'],
+    summary:'距离酒店近，适合替代跨城夜游，以湖滨步行街和湖岸夜景为主。',
+    sections:[
+      {title:'推荐走法', items:['从酒店步行到湖滨商圈，再沿湖岸短距离散步后原路或打车返回。','优先选择人行空间宽、照明好的路线，不追求绕湖。']},
+      {title:'节假日提示', items:['热门餐厅可能排队，看到等位过长就换同商圈备选。','人流密集时保管好手机和证件。']}
+    ]
+  },
+  'chenghuang-pavilion': {
+    duration:'建议 50–70 分钟', tags:['登高','西湖全景'],
+    summary:'第一站先登高辨认西湖、老城与后续南线路线，视野比长时间逛建筑更重要。',
+    sections:[
+      {title:'推荐走法', items:['上山后直奔主要观景层，先看西湖方向，再看老城方向。','11:20 左右开始下山，沿吴山一带向柳浪闻莺方向移动。']},
+      {title:'体力与拍照', items:['台阶较多，穿防滑鞋；老人或膝盖不适者减少支路。','逆光明显时先拍城市方向，西湖方向等待光线变化。']}
+    ]
+  },
+  'liulang-wenying': {
+    duration:'建议 40–60 分钟', tags:['湖岸','午饭节点'],
+    summary:'作为吴山下山后的缓冲段，重点看湖岸、柳树和开阔水面，并在附近解决午饭。',
+    sections:[
+      {title:'推荐走法', items:['从南山路方向进入，沿湖岸选择一段慢走，不必把公园每条支路走完。','12:00 左右开始找午饭，避免影响 13:20 雷峰塔。']},
+      {title:'节省体力', items:['午饭后直接乘公交或观光车去雷峰塔。','如果上午已经延误，只保留湖岸短停和午饭。']}
+    ]
+  },
+  'leifeng-pagoda': {
+    duration:'建议 50–70 分钟', tags:['登塔','雷峰夕照'],
+    summary:'核心是塔基遗址和登高观湖；国庆排队过长时可只看外观与周边湖景。',
+    sections:[
+      {title:'推荐走法', items:['进景区后先看排队长度，再决定是否登塔。','登塔后重点看西湖、苏堤与净慈寺方向，随后从太子湾方向离开。']},
+      {title:'时间控制', items:['按现行公开信息，10 月通常属于较晚闭园时段，但 2026 国庆安排须临行前确认。','排队超过 40 分钟时执行外观方案，把时间留给太子湾和花港。']}
+    ], note:'开放时间、票务和节假日限流以景区当天公告为准。'
+  },
+  'taiziwan-park': {
+    duration:'建议 35–45 分钟', tags:['公园','轻松步行'],
+    summary:'国庆不是郁金香主季，按草坪、林地和水景的短线公园游览安排。',
+    sections:[
+      {title:'推荐走法', items:['从靠近雷峰塔一侧进入，选择主路穿行，不绕远路。','以桥、水景和林下空间为主，随后从花港方向离开。']},
+      {title:'注意事项', items:['雨后草地湿滑，不为拍照进入封闭或养护区域。','若西湖人流过密，这里只短停 20 分钟。']}
+    ]
+  },
+  'huagang-view-fish': {
+    duration:'建议 35–50 分钟', tags:['园林','西湖十景'],
+    summary:'以红鱼池、花港园林和苏堤南端衔接为主，避免在支路里来回绕行。',
+    sections:[
+      {title:'推荐走法', items:['从太子湾方向进入，先看主要园林节点，再向苏堤方向出园。','拍照和休息集中安排在水边开阔处。']},
+      {title:'节省体力', items:['当天后半程还要走苏堤、孤山和白堤，不把这里扩展成完整环线。','人多时避免长时间停在窄桥和入口处。']}
+    ]
+  },
+  'su-causeway': {
+    duration:'建议 30–45 分钟', tags:['长堤','可乘观光车'],
+    summary:'这一天最容易超量步行的路段；以体验一段苏堤为目标，不强求全程硬走。',
+    sections:[
+      {title:'推荐走法', items:['从花港一侧上堤，边走边看湖面与两侧桥景。','体力下降或时间落后时，改乘观光车到曲院风荷附近。']},
+      {title:'体力管理', items:['不要在桥头和人流交汇处久停。','保留至少一半体力给孤山、白堤和断桥。']}
+    ]
+  },
+  'quyuan-fenghe': {
+    duration:'建议 20–30 分钟', tags:['西湖十景','短暂停留'],
+    summary:'10 月不以荷花为主要看点，把这里作为苏堤到孤山之间的休息和转场节点。',
+    sections:[
+      {title:'推荐走法', items:['选择靠近行程动线的水景和亭桥短线，不进入过深支路。','停留后直接向孤山、平湖秋月方向前进。']},
+      {title:'删减原则', items:['如果比计划晚 45 分钟，优先缩短或跳过此站。','如需休息，利用座椅补水后再走白堤。']}
+    ]
+  },
+  'gushan-pinghu': {
+    duration:'建议 35–50 分钟', tags:['孤山','白堤衔接'],
+    summary:'傍晚以湖面、孤山岸线和平湖秋月一带为主，不再增加室内场馆。',
+    sections:[
+      {title:'推荐走法', items:['从曲院风荷方向进入孤山，沿靠湖步道前往平湖秋月。','拍完湖景后接白堤，继续走向断桥。']},
+      {title:'傍晚提醒', items:['天色变暗后只走照明完善的主路。','如果脚力不足，从孤山附近直接打车回酒店。']}
+    ]
+  },
+  'broken-bridge': {
+    duration:'建议 20–30 分钟', tags:['白堤终点','晚饭节点'],
+    summary:'作为西湖整日路线的收尾，完成白堤视角和断桥打卡后，不再继续绕湖。',
+    sections:[
+      {title:'推荐走法', items:['沿白堤到断桥，在不阻挡通行的位置短暂停留拍照。','结束后向湖滨方向吃晚饭，或直接打车回酒店。']},
+      {title:'当天复盘', items:['全天预计步行 9–12 km，出现膝脚不适就立即结束。','节假日晚间叫车可能排队，提前查看公交和步行返程方案。']}
+    ]
+  },
+  'feilai-peak': {
+    duration:'建议 40–55 分钟', tags:['石刻造像','实名预约'],
+    summary:'进入灵隐区域后先看飞来峰造像，再顺势进入灵隐寺，避免在入口附近来回折返。',
+    sections:[
+      {title:'推荐走法', items:['按预约时段入园，沿主要石刻群缓慢前进。','重点看代表性造像和溪谷环境，不攀爬、不触摸文物。']},
+      {title:'预约规则', items:['现行规则为至少提前 1 天、最多提前 7 天实名分时预约，不接受当日预约。','预约满额时，可在入园前一日 20:00 前申请线上候补。']}
+    ], note:'10 月 4 日名额按现行规则预计 9 月 27 日 08:00 开放；最终以“杭州灵隐飞来峰”官方小程序为准。'
+  },
+  'lingyin-temple': {
+    duration:'建议 75–90 分钟', tags:['寺院','实名预约'],
+    summary:'与飞来峰同一预约区域，按主轴有序参观，控制在 13:10 左右结束。',
+    sections:[
+      {title:'推荐走法', items:['从飞来峰方向进入后沿寺院主轴参观，重要殿宇优先。','保持安静，尊重宗教场所秩序，不追逐拍摄或长时间占用通道。']},
+      {title:'离开时间', items:['13:10 左右结束，附近午饭；14:10 前必须离开灵隐片区。','若入园晚或客流过大，缩短支线，不挤压龙井和九溪时间。']}
+    ], note:'飞来峰景区现行公开时间为 7:30–17:30、17:00 停止入园；2026 国庆临时安排需再次确认。'
+  },
+  'longjing-village': {
+    duration:'建议 30–35 分钟', tags:['茶村','转场节点'],
+    summary:'本行程只做短暂停留和补给，不安排长时间品茶或消费体验。',
+    sections:[
+      {title:'推荐走法', items:['下车后沿村内主路看茶园环境，补水并确认九溪入口方向。','15:45 左右开始进入九溪，确保 16:00 进入核心步道。']},
+      {title:'消费提醒', items:['购买茶叶或喝茶前先确认品类、计价方式和总价。','不要接受影响后续时间的长时体验安排。']}
+    ]
+  },
+  'jiuxi-streams': {
+    duration:'建议 90–110 分钟', tags:['溪谷徒步','顺坡路线'],
+    summary:'从龙井方向顺坡走向九溪烟树，比从九溪口反向上坡更省体力。',
+    sections:[
+      {title:'推荐走法', items:['沿清晰主路顺溪而下，岔路不确定时以导航和现场标识为准。','核心徒步与九溪烟树合计约 4–5 km，控制拍照停留。']},
+      {title:'装备与安全', items:['穿防滑鞋，带水和薄外套；雨后石路可能湿滑。','天色变暗、暴雨或山谷封闭时立即缩短路线，不继续深入。']}
+    ]
+  },
+  'jiuxi-misty-trees': {
+    duration:'建议 25–35 分钟', tags:['溪谷景观','休息节点'],
+    summary:'作为长段徒步后的集中休息点，看水景、补水并判断是否继续走到江边。',
+    sections:[
+      {title:'推荐停留', items:['先休息和补水，再在主要水景附近短距离拍照。','18:10 左右开始向九溪口方向移动。']},
+      {title:'傍晚提醒', items:['山谷降温快，及时加衣。','如果天色或体力不允许，直接去公交站返程，取消江边。']}
+    ]
+  },
+  'jiuxi-riverfront': {
+    duration:'建议 30–40 分钟', tags:['钱塘江','安全优先'],
+    summary:'只把这里作为顺路江景收尾，不以追潮或进入江滩为目标。',
+    sections:[
+      {title:'推荐走法', items:['在九溪公交总站、珊瑚沙附近寻找开放步道，沿护栏内短距离散步。','19:10 前结束，返回湖滨吃晚饭。']},
+      {title:'观潮安全', items:['临近日期查杭州官方潮汐预报，但不保证出现壮观潮头。','绝不进入丁坝、江滩、挡浪墙外或任何临时封闭区域。']}
+    ], note:'遇到现场管制、涨水或恶劣天气，立即取消江边停留。'
+  },
+  'xixi-zhoujiacun': {
+    duration:'建议 2–2.5 小时', tags:['湿地','电瓶船 + 步行'],
+    summary:'西溪范围很大，本行程从周家村侧进入，选一段船线配合短步行，不做全园徒步。',
+    sections:[
+      {title:'推荐走法', items:['入园先看当天船班和排队，再决定先坐船还是先步行。','只选一条核心小环线，13:20 左右离开。']},
+      {title:'准备事项', items:['穿舒适鞋，带驱蚊和防晒用品。','票务、船班、开放区域和节假日限流临行前查官方公告。']}
+    ], note:'若进校预约未成功，可把紫金港时段并入西溪延长游览。'
+  },
+  'zju-zijingang': {
+    duration:'建议 60–90 分钟', tags:['校园','需确认入校规则'],
+    summary:'校园范围大，只选择校门、主轴和一两个代表性建筑，不追求完整逛完。',
+    sections:[
+      {title:'推荐走法', items:['从允许社会公众进入的校门入校，按官方校园地图选择短线。','可优先查看主教学区与校园公共空间，按 15:30 左右离开。']},
+      {title:'入校提醒', items:['国庆开放范围和社会公众预约可能临时调整，出发前关注浙江大学官方通知。','携带本人有效身份证件，不进入教学、科研或宿舍限制区域。']}
+    ], note:'未预约成功或当日不开放时，直接延长西溪游览，不在校门等待。'
+  },
+  'qiaoxi-historic': {
+    duration:'建议 45–60 分钟', tags:['历史街区','运河'],
+    summary:'从街区慢慢走向拱宸桥，把传统街巷、工业遗存和运河岸线串在一起。',
+    sections:[
+      {title:'推荐走法', items:['先走街区主巷，再向运河岸线移动。','博物馆若临近闭馆就不排队，以街区和外观为主。']},
+      {title:'节奏建议', items:['16:10 后光线适合街巷与河岸拍照。','为拱宸桥和晚饭保留至少 1 小时。']}
+    ]
+  },
+  'gongchen-bridge': {
+    duration:'建议 60–75 分钟', tags:['京杭大运河','傍晚'],
+    summary:'以拱宸桥两岸和运河夜色收尾，之后在运河边吃晚饭。',
+    sections:[
+      {title:'推荐走法', items:['从桥西街区步行到桥头，先看桥体全景，再过桥看两岸。','18:30 后就近晚饭，20:00 左右返程。']},
+      {title:'注意事项', items:['石桥台阶和湿滑路面注意脚下。','如计划乘船，船班和停靠点需当天确认，不把末班船当作唯一返程方案。']}
+    ]
+  }
+};
 
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  REPLACE THIS SECTION — Overview tab content                ║
@@ -314,7 +547,7 @@ function overviewContent() {
   <div class="info-card"><div class="label">住宿基点</div><div class="value">西湖湖滨美居 · 4 晚不换</div></div>
   <div class="info-card"><div class="label">往返航班</div><div class="value">10/2 16:35 到 T4<br>10/6 15:55 T4 起飞</div></div>
   <div class="info-card"><div class="label">重点日</div><div class="value">10/3 西湖整日<br>步行 9–12 km</div></div>
-  <div class="info-card"><div class="label">地图用法</div><div class="value">点日期看路线<br>点地点可唤起高德</div></div>
+  <div class="info-card"><div class="label">地图用法</div><div class="value">点日期看路线<br>点地点查看攻略</div></div>
 </div>
 <div class="section-head">行程概览</div>
 <div class="day-list">${DAYS.slice(1).map(d=>`<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
@@ -380,9 +613,10 @@ function icon(color, emoji) {
 if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','🏨'), zIndexOffset: 1000 }).addTo(map).bindPopup(`<b>${HOTEL.name}</b>`);
 
 let markers = [], polylines = [];
+let markerIndex = new Map();
 const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', drink:'🍺' };
 
-function clearMap() { markers.forEach(m=>map.removeLayer(m)); polylines.forEach(p=>map.removeLayer(p)); markers=[]; polylines=[]; }
+function clearMap() { markers.forEach(m=>map.removeLayer(m)); polylines.forEach(p=>map.removeLayer(p)); markers=[]; polylines=[]; markerIndex.clear(); }
 
 function showDay(idx) {
   clearMap();
@@ -392,7 +626,7 @@ function showDay(idx) {
     if(pts.length) map.fitBounds(pts, {padding:[30,30]});
     DAYS.slice(1).forEach(d => {
       d.locations.filter(l=>l.time!=='—').forEach(l => {
-        const m = L.circleMarker([l.lat,l.lng], { radius:4, fillColor:d.color, color:'#fff', weight:1.5, fillOpacity:.9 }).addTo(map).bindPopup(`<b>${l.name}</b><br><span style="color:#86868b">${d.label}</span>`);
+        const m = L.circleMarker([l.lat,l.lng], { radius:4, fillColor:d.color, color:'#fff', weight:1.5, fillOpacity:.9 }).addTo(map).bindPopup(`<b>${l.name}</b><br><span style="color:#86868b">${d.label}</span><br><button class="popup-guide" onclick="go(${d.id});setTimeout(()=>openGuide(${d.id},'${l.id}'),120)">查看攻略</button>`);
         markers.push(m);
       });
     });
@@ -405,8 +639,9 @@ function showDay(idx) {
     if(!l.lat) return;
     const m = L.marker([l.lat,l.lng], { icon: icon(day.color, emojis[l.type]||'📌') }).addTo(map);
     const gmapQ = l.gmap||encodeURIComponent(l.name+' 杭州');
-    m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gmapQ}')">📍 导航</a>${l.xhs?' · <a href="'+l.xhs+'" target="_blank">📕 小红书</a>':''}`);
+    m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><button class="popup-guide" onclick="openGuide(${day.id},'${l.id}')">查看攻略</button>`);
     markers.push(m);
+    markerIndex.set(`${day.id}::${l.id}`, m);
     if(l.time!=='—') coords.push([l.lat,l.lng]);
   });
   if(coords.length>1) { const pl = L.polyline(coords, { color:day.color, weight:2.5, opacity:.5, dashArray:'6,5' }).addTo(map); polylines.push(pl); }
@@ -460,10 +695,14 @@ function openExt(key, kind) {
 function openXhs(key) { return openExt(key, 'xhs'); }
 function openDp(key)  { return openExt(key, 'dp'); }
 
+function legCard(leg) {
+  if(!leg) return '';
+  return `<div class="leg" aria-label="下一段路程"><span>${leg.from?'<span class="leg-from">'+leg.from+' · </span>':''}<strong>${leg.mode}</strong> · ${leg.distance} · ${leg.duration}</span></div>`;
+}
+
 function locCard(loc, dayIdx) {
   const dot = loc.type==='food'?'food':loc.type==='spot'?'spot':loc.type==='drink'?'drink':loc.type==='hotel'?'hotel':'transport';
   const bdg = loc.type==='food'?'<span class="badge food">餐</span>':loc.type==='spot'?'<span class="badge spot">景</span>':loc.type==='drink'?'<span class="badge drink">饮</span>':'';
-  const uid = `d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
   const locKey = `${dayIdx}::${loc.name}`;
   const gmapQ = loc.gmap||encodeURIComponent(loc.name+' 杭州');
   let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
@@ -480,7 +719,7 @@ function locCard(loc, dayIdx) {
     lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
   }
   if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links'))toggle('${uid}')"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+  return `${legCard(loc.leg)}<div class="tl-item"><div class="tl-dot ${dot}"></div><article class="card place-card" role="button" tabindex="0" aria-label="查看${loc.name}攻略" onclick="if(!event.target.closest('.btn,.links'))openGuide(${dayIdx},'${loc.id}')" onkeydown="if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.btn,.links')){event.preventDefault();openGuide(${dayIdx},'${loc.id}')}"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div><div class="guide-hint"><span>查看完整攻略</span><span aria-hidden="true">›</span></div></article></div>`;
 }
 
 function renderDay(idx) {
@@ -517,9 +756,79 @@ function go(idx) {
   if(tab) tab.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
 }
 
-function toggle(id) { const el=document.getElementById(id); if(el) el.classList.toggle('closed'); }
-
 tabsEl.addEventListener('click', e => { const t=e.target.closest('.tab'); if(t) go(+t.dataset.day); });
+
+/* ── Place guide ── */
+const guideOverlay = document.createElement('div');
+guideOverlay.className = 'guide-overlay';
+guideOverlay.id = 'guide-overlay';
+guideOverlay.setAttribute('aria-hidden', 'true');
+guideOverlay.innerHTML = `<section class="guide-sheet" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+  <div class="guide-handle" aria-hidden="true"></div>
+  <header class="guide-head">
+    <div><div class="guide-kicker" id="guide-kicker">游玩攻略</div><h3 id="guide-title"></h3></div>
+    <button class="guide-close" type="button" aria-label="关闭攻略" onclick="closeGuide()">×</button>
+  </header>
+  <div class="guide-body" id="guide-body"></div>
+</section>`;
+document.body.appendChild(guideOverlay);
+
+let lastGuideTrigger = null;
+
+function findLocation(dayIdx, locId) {
+  const day = DAYS.find(d => d.id === dayIdx);
+  return day ? day.locations.find(l => l.id === locId) : null;
+}
+
+function guideKind(loc) {
+  if(loc.type === 'hotel') return '入住攻略';
+  if(loc.type === 'transport') return '出行攻略';
+  return '游玩攻略';
+}
+
+function renderGuideSection(section) {
+  return `<section class="guide-section"><h4>${section.title}</h4><ul>${section.items.map(item=>`<li>${item}</li>`).join('')}</ul></section>`;
+}
+
+function focusLocation(dayIdx, loc) {
+  if(!loc || !loc.lat) return;
+  map.flyTo([loc.lat, loc.lng], Math.max(map.getZoom(), 14), {duration:.45});
+  const marker = markerIndex.get(`${dayIdx}::${loc.id}`);
+  if(marker) marker.openPopup();
+}
+
+function openGuide(dayIdx, locId) {
+  if(cur !== dayIdx) go(dayIdx);
+  const loc = findLocation(dayIdx, locId);
+  const guide = GUIDES[locId];
+  if(!loc || !guide) return;
+  lastGuideTrigger = document.activeElement;
+  focusLocation(dayIdx, loc);
+  document.getElementById('guide-kicker').textContent = guideKind(loc);
+  document.getElementById('guide-title').textContent = loc.name;
+  const meta = [guide.duration, ...(guide.tags||[])].filter(Boolean);
+  document.getElementById('guide-body').innerHTML = `
+    <p class="guide-summary">${guide.summary}</p>
+    <div class="guide-meta">${meta.map(x=>`<span>${x}</span>`).join('')}</div>
+    ${loc.detail ? renderGuideSection({title:'本次行程提醒', items:[loc.detail]}) : ''}
+    ${(guide.sections||[]).map(renderGuideSection).join('')}
+    ${guide.note ? `<div class="guide-note">${guide.note}</div>` : ''}`;
+  guideOverlay.classList.add('show');
+  guideOverlay.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('guide-open');
+  setTimeout(()=>guideOverlay.querySelector('.guide-close').focus(), 30);
+}
+
+function closeGuide() {
+  if(!guideOverlay.classList.contains('show')) return;
+  guideOverlay.classList.remove('show');
+  guideOverlay.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('guide-open');
+  if(lastGuideTrigger && document.contains(lastGuideTrigger)) lastGuideTrigger.focus();
+}
+
+guideOverlay.addEventListener('click', e => { if(e.target === guideOverlay) closeGuide(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && guideOverlay.classList.contains('show')) closeGuide(); });
 
 go(0);
 
