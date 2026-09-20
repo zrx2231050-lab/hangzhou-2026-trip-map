@@ -1,0 +1,19 @@
+{
+  "name": "杭州 2026 国庆旅行地图",
+  "short_name": "杭州行程",
+  "description": "2026 年 10 月 2 日至 6 日杭州五天四晚交互式行程地图",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f7",
+  "theme_color": "#0f6b55",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
